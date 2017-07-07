@@ -26,7 +26,7 @@ function getAccount(accountName) {
 	
 	var match = undefined;
 	accounts.forEach(function(account) {
-		if (account.name == accountName) {
+		if (account.name === accountName) {
 			match = account;
 		}
 	});
