@@ -3,10 +3,48 @@ console.log("Starting Password Manager");
 var storage = require('node-persist');
 storage.initSync();
 
-// account.name
-// account.username
-// account.password
+var argv = require('yargs')
+	.command('create', 'Create an account', function (yargs) {
+		yargs.options({
+			name: {
+				demand: true,
+				alias: 'n',
+				description: 'Your name', 
+				type: 'string'
+			},
+			account: {
+				demand: true,
+				alias: 'a',
+				description: 'Account/Login', 
+				type: 'string'
+			},
+			password: {
+				demand: true,
+				alias: 'l',
+				description: 'Password', 
+				type: 'string'
+			}
+		}).help('help');
+	})
+	.command('get', 'Retrieve an acount', function (yargs) {
+		yargs.options({
+			name: {
+				demand: true,
+				alias: 'n',
+				description: 'Your name', 
+				type: 'string'
+			}
+		}).help('help');
+	})
+	.help('help')
+	.argv;
 
+
+//create 
+// --name, --user, --password
+
+//get
+// --name
 
 function createAccount(account) {
 	var accounts = storage.getItemSync('accounts');
@@ -34,15 +72,28 @@ function getAccount(accountName) {
 	return match;
 }
 
-var test = { 
-	name : "Andrew", 
-	username: "andrew", 
-	password: "password"
+// ===== MAIN =====
+var cmd = argv._[0];
+
+
+if (cmd === 'create' 
+	&& typeof(argv.name) === 'string' 
+	&& typeof(argv.account) === 'string'
+	&& typeof(argv.password) === 'string'
+	)
+{ 
+	var newaccount = {
+		name : 		argv.name, 
+		account: 	argv.account, 
+		password: 	argv.password
+	}
+	var created = createAccount(newaccount);
+	console.log(created);
+} 
+else if (cmd === 'get' 
+	&& typeof(argv.name) === 'string') 
+{ 
+	var found = getAccount(argv.name);
+	console.log(found);
 }
-
-var a = createAccount(test);
-console.log(a);
-
-var b = getAccount("Andrew");
-console.log(b);
 
