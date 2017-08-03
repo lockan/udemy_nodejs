@@ -3,7 +3,8 @@ console.log("Starting Password Manager");
 var storage = require('node-persist');
 storage.initSync();
 
-var argv = require('yargs')
+var yargs = require('yargs');
+var argv = yargs
 	.command('create', 'Create an account', function (yargs) {
 		yargs.options({
 			name: {
@@ -36,7 +37,7 @@ var argv = require('yargs')
 			}
 		}).help('help');
 	})
-	.help('help')
+	.help()
 	.argv;
 
 
@@ -94,6 +95,10 @@ else if (cmd === 'get'
 	&& typeof(argv.name) === 'string') 
 { 
 	var found = getAccount(argv.name);
-	console.log(found);
+	(found != undefined) ? console.log(found) : console.log("Account '" + argv.name + "' not found");
+}
+else if (cmd === undefined) 
+{
+	yargs.showHelp("log");
 }
 
