@@ -3,6 +3,8 @@ console.log("Starting Password Manager");
 var storage = require('node-persist');
 storage.initSync();
 
+var crypto = require('crypto-js');
+
 var yargs = require('yargs');
 var argv = yargs
 	.command('create', 'Create an account', function (yargs) {
@@ -24,6 +26,12 @@ var argv = yargs
 				alias: 'l',
 				description: 'Password', 
 				type: 'string'
+			}, 
+			masterPassword: {
+				demand: true, 
+				alias: 'd',
+				type: 'string',
+				description: 'master password' 
 			}
 		}).help('help');
 	})
@@ -34,6 +42,12 @@ var argv = yargs
 				alias: 'n',
 				description: 'Your name', 
 				type: 'string'
+			}, 
+			masterPassword: {
+				demand: true, 
+				alias: 'd',
+				type: 'string',
+				description: 'master password' 
 			}
 		}).help('help');
 	})
@@ -47,29 +61,55 @@ var argv = yargs
 //get
 // --name
 
-function createAccount(account) {
+function getAccounts(masterPassword) {
+	// use getItemSync to fetch accounts
+	var accountData = storage.getItemSync('accounts');
+	if (typeof(accountData === undefined)) { 
+		accountData = [];
+	}
+
+	//decrypt
+	var accBytes = crypto.AES.decrypt(accountData, masterPassword);
+	//var accounts = JSON.parse(accBytes.toString(crypto.AES.Utf8));
+	return JSON.parse(accBytes.toString(crypto.AES.Utf8));
+}
+
+function saveAccounts(accounts, masterPassword) {
+	// Encrypt accounts array
+	crypto.encrypt(JSON.stringify(accounts), masterPassword);
+	// setItemSync to save the encrypted accounts
+	storage.setItemSync('accounts');
+	// Return accounts
+	return accounts;
+}
+
+function createAccount(account, masterPassword) {
+	/*
 	var accounts = storage.getItemSync('accounts');
 
 	if (typeof(accounts === undefined)) { 
 		accounts = [];
 	}
-
+	*/
+	var accounts = getAccounts(masterPassword);
 	accounts.push(account);
-	storage.setItemSync('accounts', accounts);
+	//storage.setItemSync('accounts', accounts);
+	accounts = saveAccounts();
 
 	return account;
 }
 
-function getAccount(accountName) { 
-	var accounts = storage.getItemSync('accounts');
-	
+function getAccount(accountName, masterPassword) { 
+	//var accounts = storage.getItemSync('accounts');
+	var accounts = getAccounts(masterPassword);
 	var match = undefined;
+	
 	accounts.forEach(function(account) {
 		if (account.name === accountName) {
 			match = account;
 		}
 	});
-
+	
 	return match;
 }
 
@@ -81,20 +121,22 @@ if (cmd === 'create'
 	&& typeof(argv.name) === 'string' 
 	&& typeof(argv.account) === 'string'
 	&& typeof(argv.password) === 'string'
+	&& typeof(argv.masterPassword === 'string'
 	)
 { 
-	var newaccount = {
+	var newaccount = createAccount({
 		name : 		argv.name, 
 		account: 	argv.account, 
 		password: 	argv.password
-	}
-	var created = createAccount(newaccount);
-	console.log(created);
+	}, argv.masterPassword);
+	console.log("Account created: " + newaccount);
 } 
 else if (cmd === 'get' 
-	&& typeof(argv.name) === 'string') 
+	&& typeof(argv.name) === 'string'
+	&& typeof(argv.masterPassword) === 'string' 
+	)
 { 
-	var found = getAccount(argv.name);
+	var found = getAccount(argv.name, argv.masterPassword);
 	(found != undefined) ? console.log(found) : console.log("Account '" + argv.name + "' not found");
 }
 else if (cmd === undefined) 
