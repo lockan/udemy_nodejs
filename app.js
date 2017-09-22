@@ -29,7 +29,7 @@ var argv = yargs
 			}, 
 			masterPassword: {
 				demand: true, 
-				alias: 'd',
+				alias: 'm',
 				type: 'string',
 				description: 'master password' 
 			}
@@ -45,7 +45,7 @@ var argv = yargs
 			}, 
 			masterPassword: {
 				demand: true, 
-				alias: 'd',
+				alias: 'm',
 				type: 'string',
 				description: 'master password' 
 			}
@@ -55,55 +55,48 @@ var argv = yargs
 	.argv;
 
 
-//create 
-// --name, --user, --password
-
-//get
-// --name
-
 function getAccounts(masterPassword) {
 	// use getItemSync to fetch accounts
 	var accountData = storage.getItemSync('accounts');
-	if (typeof(accountData === undefined)) { 
+	if (typeof accountData === undefined) { 
 		accountData = [];
+		console.log("getAccounts returned an empty array");
+		return accountData;
 	}
-
 	//decrypt
 	var accBytes = crypto.AES.decrypt(accountData, masterPassword);
 	//var accounts = JSON.parse(accBytes.toString(crypto.AES.Utf8));
-	return JSON.parse(accBytes.toString(crypto.AES.Utf8));
+	var accounts = JSON.parse(accBytes.toString(crypto.enc.Utf8));
+	return accounts;
+
 }
 
 function saveAccounts(accounts, masterPassword) {
 	// Encrypt accounts array
-	crypto.encrypt(JSON.stringify(accounts), masterPassword);
+	var accountsData = crypto.AES.encrypt(JSON.stringify(accounts), masterPassword);
 	// setItemSync to save the encrypted accounts
-	storage.setItemSync('accounts');
+	storage.setItemSync('accounts', accountsData.toString());
 	// Return accounts
+	
 	return accounts;
 }
 
 function createAccount(account, masterPassword) {
-	/*
-	var accounts = storage.getItemSync('accounts');
-
-	if (typeof(accounts === undefined)) { 
-		accounts = [];
-	}
-	*/
 	var accounts = getAccounts(masterPassword);
 	accounts.push(account);
-	//storage.setItemSync('accounts', accounts);
-	accounts = saveAccounts();
+	accounts = saveAccounts(accounts, masterPassword);
 
 	return account;
 }
 
 function getAccount(accountName, masterPassword) { 
-	//var accounts = storage.getItemSync('accounts');
 	var accounts = getAccounts(masterPassword);
-	var match = undefined;
+	if (accounts === undefined) {
+		console.log("No accounts found.");
+		return undefined;
+	}
 	
+	var match = undefined;
 	accounts.forEach(function(account) {
 		if (account.name === accountName) {
 			match = account;
@@ -116,20 +109,19 @@ function getAccount(accountName, masterPassword) {
 // ===== MAIN =====
 var cmd = argv._[0];
 
-
 if (cmd === 'create' 
 	&& typeof(argv.name) === 'string' 
 	&& typeof(argv.account) === 'string'
 	&& typeof(argv.password) === 'string'
-	&& typeof(argv.masterPassword === 'string'
+	&& typeof(argv.masterPassword) === 'string'
 	)
-{ 
+{
 	var newaccount = createAccount({
 		name : 		argv.name, 
 		account: 	argv.account, 
 		password: 	argv.password
 	}, argv.masterPassword);
-	console.log("Account created: " + newaccount);
+	console.log("Account created: " + newaccount.name);
 } 
 else if (cmd === 'get' 
 	&& typeof(argv.name) === 'string'
