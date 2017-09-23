@@ -116,20 +116,31 @@ if (cmd === 'create'
 	&& typeof(argv.masterPassword) === 'string'
 	)
 {
-	var newaccount = createAccount({
+	try {
+		var newaccount = createAccount({
 		name : 		argv.name, 
 		account: 	argv.account, 
 		password: 	argv.password
-	}, argv.masterPassword);
-	console.log("Account created: " + newaccount.name);
+		}, argv.masterPassword);
+		console.log("Account created: " + newaccount.name);
+	}
+	catch (err) { 
+		Console.log("Error: Unable to create account");
+	}
+
 } 
 else if (cmd === 'get' 
 	&& typeof(argv.name) === 'string'
 	&& typeof(argv.masterPassword) === 'string' 
 	)
 { 
-	var found = getAccount(argv.name, argv.masterPassword);
-	(found != undefined) ? console.log(found) : console.log("Account '" + argv.name + "' not found");
+	try {
+		var found = getAccount(argv.name, argv.masterPassword);
+		(found != undefined) ? console.log(found) : console.log("Account '" + argv.name + "' not found"); 
+	}
+	catch (err) { 
+		console.log("Error: unable to get account");
+	}
 }
 else if (cmd === undefined) 
 {
