@@ -2,23 +2,51 @@
 var weather = require('./weather.js');
 var location = require('./location.js');
 
-// Weather takes a callback fn as an arg. 
-// Our callback is an anon function that takes a single string param 'currentWeather' and outputs it.
-// The weather() function calls "callback" with the string arg. 
-weather( function (currentWeather) {
-	console.log(currentWeather);
-});
+var argv = require('yargs')
+	.options({
+		location: {
+			demand: false, 
+			alias: 'l', 
+			description: 'Location name', 
+			type: 'string'
+		}
+	})
+	.help('help')
+	.argv;
 
-location(function(location) {
-	if (!location) { 
-		console.log("Could not retrieve ip address");
-		return;
-	} 
-	var city = location.city
-	if (location.city === undefined || location.city === "") {
-		city = "unknown"
-	}
 
-	console.log('city: ' + city);
-	console.log('lat/long: ' + location.loc);
-});
+function getLocationAndWeather() {
+	location(function(location) {
+		if (!location) { 
+			console.log("Could not retrieve ip address");
+			return;
+		} 
+		
+		if (location.city === "" || typeof(location.city) === 'undefined') {
+			console.log("City unknown");
+			//HACK - force wellington for testing, because I can't get my current location from ipinfo
+			location.city = "Wellington,nz";
+			console.log("hacked: city: " + location.city); 
+			//END HACK
+			//return;
+		}
+		getWeather(location.city);
+	});
+}
+
+function getWeather(location) {
+	weather( location, function (currentWeather) {
+		console.log(currentWeather);
+	});
+}
+
+if (typeof(argv.location) === 'undefined' || argv.location === "") {
+	getLocationAndWeather();
+} 
+else {
+	getWeather(argv.location);
+}
+
+
+
+
