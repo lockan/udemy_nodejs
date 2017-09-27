@@ -26,7 +26,9 @@ if (typeof(argv.location) === 'undefined' || argv.location === "") {
 			console.log(message);
 		}
 	)
-
+	.catch (function (error) {
+		console.log(error);
+	});
 } 
 else {
 	weather(argv.location)
@@ -35,6 +37,9 @@ else {
 			console.log(message);
 		}
 	)
+	.catch( function (error) {
+		console.log(error);
+	});
 }
 
 

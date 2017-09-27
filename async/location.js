@@ -11,13 +11,9 @@ module.exports = function () {
 			}, 
 			function (error, response, body) {
 				if (error) {
-					console.log("debug: location.reject");
 					reject(error);
 				}
 				else {
-					console.log("debug: location.resolve");
-					console.log("debug: " + body.city);
-					console.log(body);
 					if(!body.city) {
 						//reject("city unknown");
 						//HACK - because can't retrieve Wellington
