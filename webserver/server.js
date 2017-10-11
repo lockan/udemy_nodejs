@@ -1,12 +1,10 @@
 var express = require("express");
 var app = express();
 
-var LISTENPORT = 4000;
+var LISTENPORT = process.env.PORT || 4000;
 
 var middleware = require("./middleware.js");
 
-
-//app.use(middleware.requireAuthentication);
 app.use(middleware.logger);
 
 app.get("/about", middleware.requireAuthentication, function(request, response) {
