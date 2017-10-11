@@ -2,7 +2,7 @@
   "name": "webserver",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,5 +10,12 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.16.1"
+  },
+  "keywords" : [
+    "heroku"
+  ],
+  "engines" : {
+    "node" : "6.11.0", 
+    "npm" : "3.10.10"
   }
 }
