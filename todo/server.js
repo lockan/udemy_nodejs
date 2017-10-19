@@ -4,11 +4,16 @@ var PORT = process.env.PORT || 4000;
 
 var app = express();
 
+var bodyParser = require("body-parser");
+app.use(bodyParser.json());
+
 var middleware = require("./middleware.js");
 var reqCallbacks = [
 	middleware.logger, 
 	middleware.queryCompleted
 ];
+
+var nextId = 3; // TODO: temp, refactor this out later.
 
 //should store unformatted for sorting in database, but display human readable
 //or store as a proper date type in database if that's an option
@@ -29,6 +34,36 @@ function getFormattedDate(date) {
 						 + ss + ":"
 						 + m;
 	return datestamp;
+}
+
+function filterTodos(key, value) {
+	console.log("Filter: " + key + ", " + value);
+	console.log("key is " + typeof(key));
+	console.log("value is " + typeof(value));
+	var results = [];
+
+	todos.forEach(function(todo) { 
+		if (key in todo) {
+			console.log("Found key " + key);
+			console.log("value: " + todo[key]);
+			if (todo[key].toString() === value) {
+				console.log("found value match");
+				results.push(todo);
+			}	
+		}
+	});
+	return results;
+}
+
+function createTodo(json) {
+	var todo = {};
+	todo.id = nextId;
+	todo.description = json.description;
+	todo.completed = false;
+	todo.dateCreated = getFormattedDate(new Date());
+	todo.dateCompleted = "";
+	todos.push(todo);
+	++nextId;
 }
 
 
@@ -93,21 +128,11 @@ app.get("/todos/:id", function (req, resp) {
 	resp.json(match);
 });
 
-function filterTodos(key, value) {
-	console.log("Filter: " + key + ", " + value);
-	console.log("key is " + typeof(key));
-	console.log("value is " + typeof(value));
-	var results = [];
+// POST /todos
+app.post("/todos", function(req, resp) {
+	var body = req.body;
+	createTodo(body);
+	console.log(todos[(nextId - 1)]);
+	resp.json(todos[(nextId - 1)]);
+});
 
-	todos.forEach(function(todo) { 
-		if (key in todo) {
-			console.log("Found key " + key);
-			console.log("value: " + todo[key]);
-			if (todo[key].toString() === value) {
-				console.log("found value match");
-				results.push(todo);
-			}	
-		}
-	});
-	return results;
-}
