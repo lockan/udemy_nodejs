@@ -7,6 +7,8 @@ var app = express();
 var bodyParser = require("body-parser");
 app.use(bodyParser.json());
 
+var _ = require("underscore");
+
 var middleware = require("./middleware.js");
 var reqCallbacks = [
 	middleware.logger, 
@@ -118,19 +120,27 @@ app.get("/todos", reqCallbacks, function (req, resp) {
 // GET /todos/:id
 app.get("/todos/:id", function (req, resp) {
 	var reqId = parseInt(req.params.id);
-	console.log(reqId);
+	var match = _.findWhere(todos, {id: reqId});
+
+	/*
 	var match = null;
 	todos.forEach( function(todo) {
 		if(todo.id === reqId) {
 			match = todo;
 		}
 	});
+	*/
 	resp.json(match);
 });
 
 // POST /todos
 app.post("/todos", function(req, resp) {
-	var body = req.body;
+	var body = _.pick(req.body, "description", "completed");
+
+	if (!_.isBoolean(body.completed) || ! _.isString(body.description) || _.isEmpty(body.description)) {
+		return resp.status(400).send();
+	}
+
 	createTodo(body);
 	console.log(todos[(nextId - 1)]);
 	resp.json(todos[(nextId - 1)]);
