@@ -11,8 +11,8 @@ var _ = require("underscore");
 
 var middleware = require("./middleware.js");
 var reqCallbacks = [
-	middleware.logger, 
-	middleware.queryCompleted
+	middleware.logger
+	//middleware.queryCompleted
 ];
 
 var nextId = 3; // TODO: temp, refactor this out later.
@@ -118,7 +118,7 @@ app.get("/todos", reqCallbacks, function (req, resp) {
 
 
 // GET /todos/:id
-app.get("/todos/:id", function (req, resp) {
+app.get("/todos/:id", reqCallbacks, function (req, resp) {
 	var reqId = parseInt(req.params.id);
 	var match = _.findWhere(todos, {id: reqId});
 
@@ -134,7 +134,7 @@ app.get("/todos/:id", function (req, resp) {
 });
 
 // POST /todos
-app.post("/todos", function(req, resp) {
+app.post("/todos", reqCallbacks, function(req, resp) {
 	var body = _.pick(req.body, "description", "completed");
 
 	if (!_.isBoolean(body.completed) || ! _.isString(body.description) || _.isEmpty(body.description)) {
@@ -146,3 +146,17 @@ app.post("/todos", function(req, resp) {
 	resp.json(todos[(nextId - 1)]);
 });
 
+// DELETE /todos
+
+app.delete("/todos/:id", reqCallbacks, function(req, resp) {
+	var reqId = parseInt(req.params.id);
+	var match = _.findWhere(todos, {id: reqId});
+	
+	if (!match) {
+		resp.status(404).json({"error" : "No todo with that id"});
+	}
+
+	todos = _.without(todos, match);
+	console.log("Deleted todo " + match.id + " " + match.description);
+	resp.status(200).json({"success" : "Deleted todo " + match.id + " " + match.description}).send();
+});
