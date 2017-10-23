@@ -146,8 +146,35 @@ app.post("/todos", reqCallbacks, function(req, resp) {
 	resp.json(todos[(nextId - 1)]);
 });
 
-// DELETE /todos
+// PUT /todos/:id
+app.put("/todos/:id", function (req, resp) {
+	var reqId = parseInt(req.params.id);
+	var match = _.findWhere(todos, {id: reqId});
+	var body = _.pick(req.body, "description", "completed");
+	var validAttributes = {};
 
+	if (!match) {
+		return resp.status(404).json({"error" : "No todo with that id"});
+	}
+
+	if (body.hasOwnProperty("completed") && _.isBoolean(body.completed)) {
+		validAttributes.completed = body.completed;
+	} else if (body.hasOwnProperty("completed")) { 
+		return resp.status(400).send();
+	}
+
+	if (body.hasOwnProperty("description") && _.isString(body.description) && !_.isEmpty(body.description)) {
+		validAttributes.description = body.description;
+	} else if (body.hasOwnProperty("description")) { 
+		return resp.status(400).send();
+	}
+	
+	_.extend(match, validAttributes);	
+	return resp.json(match).send();
+});
+
+
+// DELETE /todos/:id
 app.delete("/todos/:id", reqCallbacks, function(req, resp) {
 	var reqId = parseInt(req.params.id);
 	var match = _.findWhere(todos, {id: reqId});
@@ -160,3 +187,5 @@ app.delete("/todos/:id", reqCallbacks, function(req, resp) {
 	console.log("Deleted todo " + match.id + " " + match.description);
 	resp.status(200).json({"success" : "Deleted todo " + match.id + " " + match.description}).send();
 });
+
+
