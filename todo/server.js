@@ -44,7 +44,7 @@ function filterTodos(query) {
 	if (query.description !== undefined) { 
 		console.log("Filtering on description");
 		results = _.filter(results, function(todo) {  
-			return (todo.description.toString().indexOf(query.description) > -1);
+			return (todo.description.toString().toLowerCase().indexOf(query.description.toLowerCase()) > -1);
 		});
 	}
 
