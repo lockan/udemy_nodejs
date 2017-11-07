@@ -38,22 +38,37 @@ function getFormattedDate(date) {
 	return datestamp;
 }
 
-function filterTodos(key, value) {
-	console.log("Filter: " + key + ", " + value);
-	// console.log("key is " + typeof(key));
-	// console.log("value is " + typeof(value));
-	var results = [];
+function filterTodos(query) {
+	var results = todos;
 
-	todos.forEach(function(todo) { 
-		if (key in todo) {
-			console.log("Found key " + key);
-			console.log("value: " + todo[key]);
-			if (todo[key].toString() === value) {
-				console.log("found value match");
-				results.push(todo);
-			}	
-		}
-	});
+	if (query.description !== undefined) { 
+		console.log("Filtering on description");
+		results = _.filter(results, function(todo) {  
+			return (todo.description.toString().indexOf(query.description) > -1);
+		});
+	}
+
+	if (query.completed !== undefined) {
+		console.log("Filtering on completed");
+		results = _.filter(results, function(todo) {  
+			return (todo.completed.toString() === query.completed);
+		});
+	}
+
+	if (query.dateCreated !== undefined) { 
+		console.log("Filtering on dateCreated");
+		results = _.filter(results, function(todo) {  
+			return (todo.dateCreated === query.dateCreated);
+		});
+	}
+
+	if (query.dateCompleted !== undefined) { 
+		console.log("Filtering on dateCompleted");
+		results = _.filter(results, function(todo) {  
+			return (todo.dateCompleted === query.dateCompleted);
+		});
+	} 
+	console.log("Found " + results.length + " matching items.");
 	return results;
 }
 
@@ -108,11 +123,11 @@ var todos = [
 // GET /todos?complete=true/false
 app.get("/todos", reqCallbacks, function (req, resp) {
 	var results = null;
-	if (req.query.completed !== undefined) {
-		results = filterTodos("completed", req.query.completed);
-		resp.json(results);
-	}  else {
-		resp.json(todos);	
+	var params = req.query;
+	if (params !== undefined) { 
+		return resp.json(filterTodos(params));	
+	} else {
+		return resp.json(todos);	
 	}
 });
 
