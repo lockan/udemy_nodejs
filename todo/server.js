@@ -40,8 +40,8 @@ function getFormattedDate(date) {
 
 function filterTodos(key, value) {
 	console.log("Filter: " + key + ", " + value);
-	console.log("key is " + typeof(key));
-	console.log("value is " + typeof(value));
+	// console.log("key is " + typeof(key));
+	// console.log("value is " + typeof(value));
 	var results = [];
 
 	todos.forEach(function(todo) { 
