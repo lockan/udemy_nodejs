@@ -8,6 +8,7 @@ var bodyParser = require("body-parser");
 app.use(bodyParser.json());
 
 var _ = require("underscore");
+var db = require('./db.js');
 
 var middleware = require("./middleware.js");
 var reqCallbacks = [
@@ -19,24 +20,24 @@ var nextId = 3; // TODO: temp, refactor this out later.
 
 //should store unformatted for sorting in database, but display human readable
 //or store as a proper date type in database if that's an option
-function getFormattedDate(date) {
-	var YYYY = 	date.getFullYear();
-	var MM = 	date.getMonth() + 1;
-	var DD = 	date.getDate();
-	var hh = 	date.getHours();
-	var mm = 	date.getMinutes();
-	var ss = 	date.getSeconds();
-	var m = 	date.getMilliseconds();
+// function getFormattedDate(date) {
+// 	var YYYY = 	date.getFullYear();
+// 	var MM = 	date.getMonth() + 1;
+// 	var DD = 	date.getDate();
+// 	var hh = 	date.getHours();
+// 	var mm = 	date.getMinutes();
+// 	var ss = 	date.getSeconds();
+// 	var m = 	date.getMilliseconds();
 
-	var datestamp = "" 	+ YYYY + "/"
-						 + MM + "/" 
-						 + DD + " "  
-						 + hh + ":" 
-						 + mm + ":" 
-						 + ss + ":"
-						 + m;
-	return datestamp;
-}
+// 	var datestamp = "" 	+ YYYY + "/"
+// 						 + MM + "/" 
+// 						 + DD + " "  
+// 						 + hh + ":" 
+// 						 + mm + ":" 
+// 						 + ss + ":"
+// 						 + m;
+// 	return datestamp;
+// }
 
 function filterTodos(query) {
 	var results = todos;
@@ -72,63 +73,63 @@ function filterTodos(query) {
 	return results;
 }
 
-function createTodo(json) {
-	var todo = {};
-	todo.id = nextId;
-	todo.description = json.description;
-	todo.completed = false;
-	todo.dateCreated = getFormattedDate(new Date());
-	todo.dateCompleted = "";
-	todos.push(todo);
-	++nextId;
-}
+// function createTodo(json) {
+// 	var todo = {};
+// 	todo.id = nextId;
+// 	todo.description = json.description;
+// 	todo.completed = false;
+// 	todo.dateCreated = getFormattedDate(new Date());
+// 	todo.dateCompleted = "";
+// 	todos.push(todo);
+// 	++nextId;
+// }
 
-
-app.get('/', function(req, resp) {
-	resp.send('To-do API root');
-});
-
-
-app.listen(PORT, function() {
-	console.log("Server listening on port " + PORT + "...");
-});
-
-var today = getFormattedDate(new Date());
+//var today = getFormattedDate(new Date());
 
 var todos = [
 	{
 		id: 0,
 		description: "A thing that needs doing", 
 		completed: false,
-		dateCreated: today,
-		dateCompleted: ""
+		//dateCreated: today,
+		//dateCompleted: ""
 	}, 
 	{
 		id: 1,
 		description: "A procrastination task", 
 		completed: false,
-		dateCreated: today,
-		dateCompleted: ""
+		//dateCreated: today,
+		//dateCompleted: ""
 	},
 	{
 		id: 2,
 		description: "An added task", 
 		completed: true,
-		dateCreated: today,
-		dateCompleted: today
+		//dateCreated: today,
+		//dateCompleted: today
 	}
 ];
 
 // GET /todos
 // GET /todos?complete=true/false
 app.get("/todos", reqCallbacks, function (req, resp) {
-	var results = null;
-	var params = req.query;
-	if (params !== undefined) { 
-		return resp.json(filterTodos(params));	
-	} else {
-		return resp.json(todos);	
-	}
+	db.todo.findAll()
+	.then( function(todos) {
+		console.log("todos:");
+		console.log(todos);
+		resp.status(200).json(todos);
+	})
+	.catch(function(e) {
+		console.log(e);
+	});
+	
+	// var results = null;
+	// var params = req.query;
+	// if (params !== undefined) { 
+	// 	return resp.json(filterTodos(params));	
+	// } else {
+	// 	return resp.json(todos);	
+	// }
 });
 
 
@@ -136,6 +137,7 @@ app.get("/todos", reqCallbacks, function (req, resp) {
 app.get("/todos/:id", reqCallbacks, function (req, resp) {
 	var reqId = parseInt(req.params.id);
 	var match = _.findWhere(todos, {id: reqId});
+	
 
 	/*
 	var match = null;
@@ -151,14 +153,19 @@ app.get("/todos/:id", reqCallbacks, function (req, resp) {
 // POST /todos
 app.post("/todos", reqCallbacks, function(req, resp) {
 	var body = _.pick(req.body, "description", "completed");
-
+	
 	if (!_.isBoolean(body.completed) || ! _.isString(body.description) || _.isEmpty(body.description)) {
-		return resp.status(400).send();
+		resp.status(400).send();
 	}
 
-	createTodo(body);
-	console.log(todos[(nextId - 1)]);
-	resp.json(todos[(nextId - 1)]);
+	db.todo.create(body)
+	.then(function(todo) {
+		resp.json(todo);
+	})
+	.catch(function(e) {
+		resp.status(400).json(e);
+	});
+
 });
 
 // PUT /todos/:id
@@ -203,4 +210,12 @@ app.delete("/todos/:id", reqCallbacks, function(req, resp) {
 	resp.status(200).json({"success" : "Deleted todo " + match.id + " " + match.description}).send();
 });
 
+app.get('/', function(req, resp) {
+	resp.send('To-do API root');
+});
 
+db.sequelize.sync();
+
+app.listen(PORT, function() {
+	console.log("Server listening on port " + PORT + "...");
+});
