@@ -121,7 +121,7 @@ app.get("/todos", reqCallbacks, function (req, resp) {
 	})
 	.catch(function(e) {
 		console.log(e);
-		resp.status(500);
+		resp.status(500).send();
 	});
 	
 	// var results = null;
@@ -138,25 +138,17 @@ app.get("/todos", reqCallbacks, function (req, resp) {
 app.get("/todos/:id", reqCallbacks, function (req, resp) {
 	var reqId = parseInt(req.params.id);
 	// var match = _.findWhere(todos, {id: reqId});
-	var match = db.todo.findAll(
-		{
-			where: {
-				id: {
-					[db.Ops.eq]: reqId
-				}
-			} 
-		}
-	)
+	var match = db.todo.findById(reqId)
 	.then(function(match){
 		if (match) {
-			resp.status(200).json(match);
+			resp.status(200).json(match).send();
 		} else {
-			resp.status(404);
+			resp.status(404).send();
 		}
 	})
 	.catch(function(e) {
 		console.log(e);
-		resp.status(500);
+		resp.status(500).send();
 	});
 	
 
