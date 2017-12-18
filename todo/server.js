@@ -73,19 +73,6 @@ function filterTodos(query) {
 	return results;
 }
 
-// function createTodo(json) {
-// 	var todo = {};
-// 	todo.id = nextId;
-// 	todo.description = json.description;
-// 	todo.completed = false;
-// 	todo.dateCreated = getFormattedDate(new Date());
-// 	todo.dateCompleted = "";
-// 	todos.push(todo);
-// 	++nextId;
-// }
-
-//var today = getFormattedDate(new Date());
-
 var todos = [
 	{
 		id: 0,
@@ -123,14 +110,6 @@ app.get("/todos", reqCallbacks, function (req, resp) {
 		console.log(e);
 		resp.status(500).send();
 	});
-	
-	// var results = null;
-	// var params = req.query;
-	// if (params !== undefined) { 
-	// 	return resp.json(filterTodos(params));	
-	// } else {
-	// 	return resp.json(todos);	
-	// }
 });
 
 
@@ -150,17 +129,6 @@ app.get("/todos/:id", reqCallbacks, function (req, resp) {
 		console.log(e);
 		resp.status(500).send();
 	});
-	
-
-	/*
-	var match = null;
-	todos.forEach( function(todo) {
-		if(todo.id === reqId) {
-			match = todo;
-		}
-	});
-	*/
-	//resp.json(match);
 });
 
 // POST /todos
