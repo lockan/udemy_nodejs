@@ -39,38 +39,32 @@ var nextId = 3; // TODO: temp, refactor this out later.
 // 	return datestamp;
 // }
 
-function filterTodos(query) {
-	var results = todos;
+function constructWhereFilter(query) {
+	var filter = {};
 
-	if (query.description !== undefined) { 
-		console.log("Filtering on description");
-		results = _.filter(results, function(todo) {  
-			return (todo.description.toString().toLowerCase().indexOf(query.description.toLowerCase()) > -1);
-		});
+	if (query.description !== undefined) {
+		console.log("Filter on description");
+		filter.description = { [db.Ops.like] : '%' + query.description +'%'}
 	}
 
-	if (query.completed !== undefined) {
-		console.log("Filtering on completed");
-		results = _.filter(results, function(todo) {  
-			return (todo.completed.toString() === query.completed);
-		});
+	if (query.dateCreated !== undefined) {
+		console.log("Filter on creation date"); 
+		filter.createdAt = query.createdAt;
 	}
 
-	if (query.dateCreated !== undefined) { 
-		console.log("Filtering on dateCreated");
-		results = _.filter(results, function(todo) {  
-			return (todo.dateCreated === query.dateCreated);
-		});
+	if (query.completed !== undefined) { 
+		console.log("Filter on completed");
+		filter.completed = query.completed;
+		
+		if (query.completed.toLowerCase() === "true") {
+			if (query.updatedAt !== undefined && query.updatedAt !== undefined) { 
+				console.log("Filter on completion date");
+				filter.updatedAt = query.updatedAt;
+			}
+		}	
 	}
-
-	if (query.dateCompleted !== undefined) { 
-		console.log("Filtering on dateCompleted");
-		results = _.filter(results, function(todo) {  
-			return (todo.dateCompleted === query.dateCompleted);
-		});
-	} 
-	console.log("Found " + results.length + " matching items.");
-	return results;
+	
+	return filter;
 }
 
 var todos = [
@@ -100,10 +94,11 @@ var todos = [
 // GET /todos
 // GET /todos?complete=true/false
 app.get("/todos", reqCallbacks, function (req, resp) {
-	db.todo.findAll()
+	var query = req.query;
+	var where = constructWhereFilter(query);
+
+	db.todo.findAll({where: where})
 	.then( function(todos) {
-		console.log("todos:");
-		console.log(todos);
 		resp.status(200).json(todos);
 	})
 	.catch(function(e) {
