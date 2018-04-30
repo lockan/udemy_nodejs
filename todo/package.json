@@ -10,11 +10,11 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.18.2",
-    "express": "^4.16.2",
+    "express": "^4.16.3",
     "pg": "^7.4.1",
     "pg-hstore": "^2.3.2",
-    "sequelize": "^4.22.5",
+    "sequelize": "^4.37.6",
     "sqlite3": "^3.1.13",
-    "underscore": "^1.8.3"
+    "underscore": "^1.9.0"
   }
 }

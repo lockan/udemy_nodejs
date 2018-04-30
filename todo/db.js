@@ -22,7 +22,7 @@ const Ops = Sequelize.Op;
 
 var db = {};
 
-db.todo = sequelize.import(__dirname + "\\data\\models\\todo.js");
+db.todo = sequelize.import(__dirname + "/data/models/todo.js");
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 db.Ops = Ops;
