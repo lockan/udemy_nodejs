@@ -1,23 +1,35 @@
 var request = require('request');
 
 //TODO: toggle between localhost and live somehow
-var testUrl = "http://udemy-todo-lockan.herokuapp.com:4000/todos/";
+var testUrl = "https://udemy-todo-lockan.herokuapp.com/todos/";
 
 beforeAll( () => {
   console.log("Running tests...");
 });
 
 // GET /todos
-test("GET", () => {
-	doGet(testUrl)
+test("GET /todos", () => {
+	return doGet(testUrl)
 	.then( function (response) {
-		expect(statusIsOK(response.statusCode)).toBe(true);
+		expect(queryHasItems(response)).toBe(true);
 	});
 });
 
 // GET /todos?complete=true
+test("GET /todos?complete=true", () => { 
+	return doGet(testUrl + "?completed=true")
+	.then( function (response) {
+		expect(queryHasItems(response)).toBe(false);
+	});
+});
 
 // GET /todos?complete=false
+test("GET /todos?complete=false", () => { 
+	return doGet(testUrl + "?completed=false")
+	.then( function (response) {
+		expect(queryHasItems(response)).toBe(true);
+	});
+});
 
 // GET /todos/:id
 
@@ -28,19 +40,21 @@ test("GET", () => {
 // DELETE /todos/:id
 
 afterAll( () => {
-  console.log("Tests complete");
+	console.log("Tests complete");
 });
-
 
 function doGet(url) {
 	return new Promise ( function(resolve, reject) {
-		request.get("http://www.google.com")
-		.on('error', function(err) { 
-			console.log(err);
-			reject(err);
-		})
-		.on('response', function (resp) { 
-			resolve(resp);
+		request.get(url, (err, resp, data) => { 
+			if(err) { 
+				console.log(err);
+				reject(err);
+			};
+			if(data !== undefined && resp.statusCode == 200) { 
+				resolve(data);	
+			} else { 
+				reject(undefined);
+			}
 		});
 	});
 }
@@ -53,7 +67,11 @@ function doPut(url, payload) {
 	return true; //TODO: implement me
 }
 
-
 function statusIsOK(code) { 
 	return (code == '200');
+}
+
+function queryHasItems(data) { 
+	items = JSON.parse(data);
+	return (data !== undefined && items.length !== 0);
 }
