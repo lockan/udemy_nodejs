@@ -3,6 +3,7 @@ var Sequelize = require('sequelize');
 var sequelize;
 
 if (env === 'production') { 
+	//DATABASE_URL is configured on heroku dashboard
 	sequelize = new Sequelize(process.env.DATABASE_URL, { 
 		dialect: 'postgres'
 	});

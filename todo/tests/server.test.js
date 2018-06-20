@@ -67,10 +67,6 @@ function doPut(url, payload) {
 	return true; //TODO: implement me
 }
 
-function statusIsOK(code) { 
-	return (code == '200');
-}
-
 function queryHasItems(data) { 
 	items = JSON.parse(data);
 	return (data !== undefined && items.length !== 0);
