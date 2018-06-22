@@ -1,7 +1,7 @@
 var request = require('request');
 
 //TODO: toggle between localhost and live somehow
-var testUrl = "https://udemy-todo-lockan.herokuapp.com/todos/";
+var testUrl = "https://udemy-todo-lockan.herokuapp.com/todos";
 
 beforeAll( () => {
   console.log("Running tests...");
@@ -32,8 +32,24 @@ test("GET /todos?complete=false", () => {
 });
 
 // GET /todos/:id
+test("GET /todos?id=1", () => { 
+	return doGet(testUrl + "?id=1")
+	.then( function (response) {
+		expect(queryHasItems(response)).toBe(true);
+	});
+});
 
 // POST /todos
+test("POST /todos", () => {
+	var todo = { 
+		"description": "New Item added by unit test",
+		"completed": false
+	};
+	return doPost(testUrl, todo)
+	.then( function (response) {
+		expect(queryHasItems(response)).toBe(true);
+	});
+});
 
 // PUT /todos/:id
 
@@ -50,7 +66,7 @@ function doGet(url) {
 				console.log(err);
 				reject(err);
 			};
-			if(data !== undefined && resp.statusCode == 200) { 
+			if(data !== undefined && resp.statusCode == 200) {
 				resolve(data);	
 			} else { 
 				reject(undefined);
@@ -60,14 +76,40 @@ function doGet(url) {
 }
 
 function doPost(url, payload) { 
-	return true; //TODO: implement me
+	return new Promise(function (resolve, reject) { 
+			var options = { 
+				url: url,
+				json: payload, 
+			}
+
+		request.post(options, (err, resp, data) => {
+			if (err) { 
+				console.log(err);
+				reject(err);
+			};
+			if(data !== undefined && resp.statusCode == 200) { 
+				resolve(data);	
+			} else { 
+				reject(undefined);
+			}
+		});
+	});
 }
 
 function doPut(url, payload) { 
 	return true; //TODO: implement me
 }
 
-function queryHasItems(data) { 
-	items = JSON.parse(data);
+function queryHasItems(data) {
+	var items = [];
+	if (typeof(data) === "string") { 
+		items = JSON.parse(data);
+	} else { 
+		items = data;
+	}
 	return (data !== undefined && items.length !== 0);
+}
+
+function returnCodeIsOkay(code) {
+	return code == '200';
 }

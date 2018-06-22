@@ -133,7 +133,7 @@ app.post("/todos", reqCallbacks, function(req, resp) {
 	if (!_.isBoolean(body.completed) || ! _.isString(body.description) || _.isEmpty(body.description)) {
 		resp.status(400).send();
 	}
-
+	
 	db.todo.create(body)
 	.then(function(todo) {
 		resp.json(todo);
