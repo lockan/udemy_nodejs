@@ -147,28 +147,31 @@ app.post("/todos", reqCallbacks, function(req, resp) {
 // PUT /todos/:id
 app.put("/todos/:id", function (req, resp) {
 	var reqId = parseInt(req.params.id);
-	var match = _.findWhere(todos, {id: reqId});
-	var body = _.pick(req.body, "description", "completed");
-	var validAttributes = {};
+	var newbody = _.pick(req.body, "description", "completed");
 
-	if (!match) {
-		return resp.status(404).json({"error" : "No todo with that id"});
-	}
-
-	if (body.hasOwnProperty("completed") && _.isBoolean(body.completed)) {
-		validAttributes.completed = body.completed;
-	} else if (body.hasOwnProperty("completed")) { 
-		return resp.status(400).send();
-	}
-
-	if (body.hasOwnProperty("description") && _.isString(body.description) && !_.isEmpty(body.description)) {
-		validAttributes.description = body.description;
-	} else if (body.hasOwnProperty("description")) { 
-		return resp.status(400).send();
-	}
-	
-	_.extend(match, validAttributes);	
-	return resp.json(match).send();
+	db.todo.findById(reqId)
+	.then(function(todo) {
+		if (todo) { 
+			return todo.update(newbody);
+		} else { 
+			resp.status(404).send();
+		}
+	},
+	function () { 
+		resp.status(500).send();
+	})
+	.then(function (todo) { 
+		resp.json(todo.toJSON());
+	}, 
+	function (err) {
+		resp.status(400).send(err);
+	})
+	.catch(function(e) {
+		resp.status(500).json(e);
+	});
+	// Explanation of above: 
+	// Each promise (.then(...) is providing two anon callbacks
+	// one for resolve, one for reject
 });
 
 
@@ -182,7 +185,6 @@ app.delete("/todos/:id", reqCallbacks, function(req, resp) {
 		}
 	})
 	.then(function(deletedRows) { 
-		console.log("DELETED=" + deletedRows);
 		if (deletedRows === 0 || deletedRows === undefined) { 
 			resp.status(404).json({"error":"No todo with that ID found"});
 		} else {

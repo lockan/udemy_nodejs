@@ -19,7 +19,7 @@ test("GET /todos", () => {
 test("GET /todos?complete=true", () => { 
 	return doGet(testUrl + "?completed=true")
 	.then( function (response) {
-		expect(queryHasItems(response)).toBe(false);
+		expect(queryHasItems(response)).toBe(true);
 	});
 });
 
@@ -51,7 +51,7 @@ test("POST /todos", () => {
 	});
 });
 
-PUT /todos/:id
+//PUT /todos/:id
 test("PUT /todos/:id", () => {
 	//doGet( incomplete)....
 	return doGet(testUrl + "?completed=false")
