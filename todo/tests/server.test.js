@@ -51,7 +51,7 @@ test("POST /todos", () => {
 	});
 });
 
-// PUT /todos/:id
+PUT /todos/:id
 test("PUT /todos/:id", () => {
 	//doGet( incomplete)....
 	return doGet(testUrl + "?completed=false")
@@ -76,12 +76,13 @@ test("DELETE /todos/:id", () => {
 	return doGet(testUrl + "?completed=true")
 	.then( (todolist) => {
 		// get id of first complete
+		console.log("TODOLIST=" + todolist);
 		var todos = JSON.parse(todolist);
+		console.log("TODOS=" + todos);
 		var t_id = todos[0].id;
 		return doDelete(testUrl + "/" + t_id)
 		.then ( (response) => { 
-			//TODO: fix response for DELETE
-			expect(todoIsComplete(response)).toBe(true);
+			expect(statusCodeIsNoContent(response.statusCode)).toBe(true);
 		});
 	});
 });
@@ -163,8 +164,8 @@ function doDelete(url) {
 				reject(err);
 			};
 			//TODO: test and fix if needed
-			if(data !== undefined && resp.statusCode == 200) { 
-				resolve(data);	
+			if(resp.statusCode == 204) { 
+				resolve(resp);
 			} else { 
 				reject(undefined);
 			}
@@ -189,9 +190,13 @@ function todoIsComplete(data) {
 	} else { 
 		todo = data;
 	}
-	return todo.completed === true;
+	return (todo.completed === true);
 }
 
-function returnCodeIsOkay(code) {
+function statusCodeIsOkay(code) {
 	return code == '200';
+}
+
+function statusCodeIsNoContent(code) { 
+	return code == '204';
 }

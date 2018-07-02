@@ -175,15 +175,24 @@ app.put("/todos/:id", function (req, resp) {
 // DELETE /todos/:id
 app.delete("/todos/:id", reqCallbacks, function(req, resp) {
 	var reqId = parseInt(req.params.id);
-	var match = _.findWhere(todos, {id: reqId});
-	
-	if (!match) {
-		resp.status(404).json({"error" : "No todo with that id"});
-	}
-
-	todos = _.without(todos, match);
-	console.log("Deleted todo " + match.id + " " + match.description);
-	resp.status(200).json({"success" : "Deleted todo " + match.id + " " + match.description}).send();
+	var match = db.todo.findById(reqId)
+	.then(function(match){
+		if (match) {
+			return match.destroy();
+		}
+	})
+	.then(function(deletedRows) { 
+		console.log("DELETED=" + deletedRows);
+		if (deletedRows === 0 || deletedRows === undefined) { 
+			resp.status(404).json({"error":"No todo with that ID found"});
+		} else {
+			resp.status(204).send();
+		}
+	})
+	.catch(function(e) {
+		console.log(e);
+		resp.status(500).send();
+	});
 });
 
 app.get('/', function(req, resp) {
