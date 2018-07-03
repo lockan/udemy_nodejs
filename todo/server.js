@@ -90,6 +90,7 @@ var todos = [
 		//dateCompleted: today
 	}
 ];
+// ##### TODOS ROUTES #####
 
 // GET /todos
 // GET /todos?complete=true/false
@@ -196,6 +197,46 @@ app.delete("/todos/:id", reqCallbacks, function(req, resp) {
 		resp.status(500).send();
 	});
 });
+
+// ##### USERS ROUTES #####
+
+// GET /users
+app.get("/users", reqCallbacks, function (req, resp) {
+	var query = req.query;
+
+	//TODO - replace a version of the "where" filter. See todos
+	db.user.findAll()
+	.then( function(users) {
+		resp.status(200).json(users);
+	})
+	.catch(function(e) {
+		console.log(e);
+		resp.status(500).send();
+	});
+});
+
+// POST /users
+app.post("/users", reqCallbacks, function(req, resp) {
+	var body = _.pick(req.body, "email", "password");
+	
+	if (!_.isString(body.email) || 
+		!_.isString(body.password) || 
+		_.isEmpty(body.email) || 
+		_.isEmpty(body.password)) {
+		
+			resp.status(400).send();
+	}
+	
+	db.user.create(body)
+	.then(function(user) {
+		resp.json(user);
+	})
+	.catch(function(e) {
+		resp.status(400).json(e);
+	});
+});
+
+// ##### CORE FUNCTIONS ######
 
 app.get('/', function(req, resp) {
 	resp.send('To-do API root');
